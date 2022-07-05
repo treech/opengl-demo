@@ -13,32 +13,24 @@ GLint g_ShaderProgram;
 jint g_width;
 jint g_height;
 
-char *readShaderFile(char *shaderFile) {
+char* readShaderFile(char *shaderFile) {
     if (NULL == g_pAssetManager) {
         LOGE("pAssetManager is null!");
         return NULL;
     }
-    AAsset *pAsset = NULL;
-    off_t size = -1;
-    char *pBuffer = NULL;
-    int numberByte = -1;
-
-    pAsset = AAssetManager_open(g_pAssetManager, shaderFile, AASSET_MODE_UNKNOWN);
-    size = AAsset_getLength(pAsset);
+    AAsset *pAsset = AAssetManager_open(g_pAssetManager, shaderFile, AASSET_MODE_BUFFER);
+    off_t fileLength = AAsset_getLength(pAsset);
     LOGI("after AAssetManager_open");
-    pBuffer = (char *) malloc(size + 1);
-    pBuffer[size] = '\0';
-    numberByte = AAsset_read(pAsset, pBuffer, size);
+    char *pBuffer = (char *) malloc(fileLength);
+    AAsset_read(pAsset, pBuffer, fileLength);
     LOGI("shaderFile:%s,pBuffer:%s", shaderFile, pBuffer);
     AAsset_close(pAsset);
     return pBuffer;
 }
 
 GLuint loadShader(GLenum type, const char *shaderSrc) {
-    GLuint shader;
-    GLint compiled;
     // Create the shader object
-    shader = glCreateShader(type);
+    GLuint shader = glCreateShader(type);
     if (shader == 0) {
         return 0;
     }
@@ -47,6 +39,8 @@ GLuint loadShader(GLenum type, const char *shaderSrc) {
 
     // Compile the shader
     glCompileShader(shader);
+
+    GLint compiled;
 
     // Check the compile status
     glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
@@ -91,16 +85,11 @@ Java_com_treech_opengl_demo_MyRender_glesInit(
     char *pVertexShader = readShaderFile("shader/vs.glsl");
     char *pFragmentShader = readShaderFile("shader/fs.glsl");
 
-    GLuint vertexShader;
-    GLuint fragmentShader;
-    GLuint shaderProgram;
-    GLint linkStatus;
-
-    vertexShader = loadShader(GL_VERTEX_SHADER, pVertexShader);
-    fragmentShader = loadShader(GL_FRAGMENT_SHADER, pFragmentShader);
+    GLuint vertexShader = loadShader(GL_VERTEX_SHADER, pVertexShader);
+    GLuint fragmentShader = loadShader(GL_FRAGMENT_SHADER, pFragmentShader);
 
     // Create the program object
-    shaderProgram = glCreateProgram();
+    GLuint shaderProgram = glCreateProgram();
     if (shaderProgram == 0) {
         LOGE("shaderProgram create error!");
         return;
@@ -110,6 +99,8 @@ Java_com_treech_opengl_demo_MyRender_glesInit(
 
     // Link the program
     glLinkProgram(shaderProgram);
+
+    GLint linkStatus;
 
     // Check the link status
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linkStatus);
